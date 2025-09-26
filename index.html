@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proteinuria Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.5em;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #output {
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .section {
+            margin-bottom: 15px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .warning {
+            color: orange;
+            font-weight: bold;
+        }
+        ul {
+            padding-left: 20px;
+        }
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Proteinuria Calculator</h1>
+        <p>Enter urine concentrations in mg/L. This tool provides ACR, PCR, APR, NAP, and clinical insights based on KDIGO guidelines. Not a substitute for medical advice.</p>
+        <form id="calcForm">
+            <label for="albumin">Urine Albumin (mg/L):</label>
+            <input type="number" id="albumin" step="0.01" min="0" required>
+            
+            <label for="protein">Urine Protein (mg/L):</label>
+            <input type="number" id="protein" step="0.01" min="0" required>
+            
+            <label for="creatinine">Urine Creatinine (mg/L):</label>
+            <input type="number" id="creatinine" step="0.01" min="0.01" required>
+            
+            <button type="submit">Calculate</button>
+        </form>
+        <div id="output"></div>
+    </div>
+
+    <script>
+        document.getElementById('calcForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const albumin = parseFloat(document.getElementById('albumin').value);
+            const protein = parseFloat(document.getElementById('protein').value);
+            const creatinine = parseFloat(document.getElementById('creatinine').value);
+            const outputDiv = document.getElementById('output');
+            outputDiv.innerHTML = '';
+
+            // Input Validation
+            let errors = [];
+            let warnings = [];
+            if (isNaN(albumin) || isNaN(protein) || isNaN(creatinine) || albumin < 0 || protein < 0 || creatinine <= 0) {
+                errors.push('All inputs must be positive numbers (creatinine >0).');
+            }
+            if (albumin > protein) {
+                errors.push('Urine albumin cannot exceed urine protein. Please check inputs.');
+            }
+            if (creatinine < 10 || creatinine > 5000) {
+                warnings.push('Urine creatinine value is atypical (normal range ~500-2000 mg/L). Results may be unreliable; consider dilute/concentrated sample.');
+            }
+            if (protein < 1 || protein > 10000) {
+                warnings.push('Urine protein value is extreme. Verify lab results.');
+            }
+
+            if (errors.length > 0) {
+                outputDiv.innerHTML = errors.map(err => `<p class="error">${err}</p>`).join('');
+                return;
+            }
+
+            // Core Calculations
+            const ACR = (albumin / creatinine) * 1000;
+            const PCR = (protein / creatinine) * 1000;
+            let APR = 'N/A (no proteinuria)';
+            if (PCR > 0) {
+                APR = (ACR / PCR).toFixed(2);
+            }
+            const NAP = PCR - ACR;
+
+            // Categorization
+            let acrCategory = '';
+            if (ACR < 30) acrCategory = 'Normal albuminuria';
+            else if (ACR <= 300) acrCategory = 'Moderately increased albuminuria (microalbuminuria)';
+            else acrCategory = 'Severely increased albuminuria (macroalbuminuria)';
+
+            let pcrCategory = '';
+            if (PCR < 150) pcrCategory = 'Normal proteinuria';
+            else if (PCR <= 500) pcrCategory = 'Mild proteinuria';
+            else if (PCR <= 3500) pcrCategory = 'Moderate proteinuria';
+            else pcrCategory = 'Nephrotic range proteinuria';
+
+            let aprCategory = '';
+            if (PCR > 0) {
+                if (APR > 0.5) aprCategory = 'High (suggests predominantly glomerular, selective albumin loss)';
+                else if (APR >= 0.4) aprCategory = 'Borderline (possible mixed or early glomerular)';
+                else aprCategory = 'Low (suggests non-glomerular, e.g., tubular/overflow)';
+            }
+
+            let napCategory = '';
+            if (NAP < 150) napCategory = 'Low (minimal non-albumin component)';
+            else if (NAP <= 300) napCategory = 'Mildly elevated';
+            else napCategory = 'Significantly elevated (high risk for tubular damage and mortality)';
+
+            // Clinical Conclusions (conditional logic)
+            let conclusions = [];
+
+            // Base on ACR
+            if (ACR < 30) {
+                conclusions.push('Both ACR and PCR are within normal ranges, indicating no significant urinary protein loss. This rules out active glomerular or tubular disease based on this sample.');
+            } else if (ACR <= 300) {
+                conclusions.push('The ACR indicates moderately increased urinary albumin loss, an early marker of kidney damage often seen in conditions like diabetes, hypertension, or early glomerular disease. This level is associated with increased risk of CKD progression and cardiovascular events; consider screening for underlying causes and initiating renoprotective therapies (e.g., ACE inhibitors/ARBs or SGLT2 inhibitors if applicable).');
+            } else {
+                conclusions.push('The ACR indicates severely increased urinary albumin loss, a strong marker of advanced glomerular injury (e.g., in IgA nephropathy or lupus nephritis). This is linked to rapid CKD progression, higher all-cause mortality, and warrants urgent evaluation.');
+            }
+
+            // Base on PCR
+            if (PCR < 150) {
+                conclusions.push('No detectable proteinuria; fully normal. No clinical concerns from this test.');
+            } else if (PCR <= 500) {
+                conclusions.push('The PCR suggests overall mild proteinuria, which may warrant monitoring for progression to nephrotic range (>3500 mg/g).');
+            } else if (PCR <= 3500) {
+                conclusions.push('The PCR confirms moderate overall proteinuria, correlating well with 24-hour excretion (~1-3 g/day); monitor for edema or hypoalbuminemia if progressing.');
+            } else {
+                conclusions.push('The PCR shows nephrotic-range proteinuria (>3500 mg/g), associated with hypoalbuminemia, edema, and thrombosis risk; urgent assessment needed.');
+            }
+
+            // Base on APR
+            if (PCR > 0) {
+                if (APR > 0.5) {
+                    conclusions.push(`The high APR (>0.5) points toward selective glomerular proteinuria, making glomerular diseases (e.g., glomerulonephritis, diabetic nephropathy) more likely than tubular or overflow causes. This accentuates the ACR relative to PCR, supporting a glomerular etiology.`);
+                } else if (APR >= 0.4) {
+                    conclusions.push(`The borderline APR (0.4-0.5) suggests possible mixed etiology, with glomerular dominance but some non-selective loss—less accentuated ACR relative to PCR, pushing slightly away from pure glomerular toward mixed glomerular-tubular (e.g., diabetic kidney disease with interstitial components).`);
+                } else {
+                    conclusions.push(`The low APR (<0.4) points away from glomerular diseases toward non-glomerular causes like tubular dysfunction, acute interstitial nephritis, or overflow (e.g., light chains in myeloma). ACR is proportional to expected albumin, not exaggerated.`);
+                    if (PCR > 3500) {
+                        conclusions.push(`The very low APR (<0.4) strongly suggests overflow proteinuria (e.g., paraproteins in multiple myeloma) or severe tubular damage, pushing far from glomerular etiology.`);
+                    }
+                }
+            }
+
+            // Base on NAP
+            if (NAP < 150) {
+                conclusions.push('NAP is low, with no evidence of tubulointerstitial injury.');
+            } else if (NAP <= 300) {
+                conclusions.push('The NAP is mildly elevated but below high-risk thresholds (>250-300 mg/g), suggesting limited tubulointerstitial involvement; however, if persistent, it may indicate additional tubular damage and higher mortality risk.');
+            } else {
+                conclusions.push('The significantly elevated NAP (>300 mg/g) is a key marker of tubulointerstitial injury, predicting higher mortality and CKD progression independent of ACR.');
+                conclusions.push('The significantly elevated NAP (>300 mg/g) indicates notable tubulointerstitial injury, associated with higher mortality risk (e.g., adjusted HR ~1.4 per doubling); this may reflect acute interstitial nephritis or chronic damage.');
+            }
+
+            // Recommendations (always include)
+            let recommendations = 'Recommendations: Confirm with repeat testing (e.g., early morning spot urine) to rule out transients like exercise or infection. If ACR >300 mg/g on repeat, consider referral to nephrology for potential biopsy or further evaluation (e.g., serum creatinine, eGFR, urine microscopy). Rule out overflow proteinuria (e.g., via urine protein electrophoresis) if APR <0.4 in future tests. Monitor for systemic risks and adjust based on KDIGO guidelines.';
+            if (ACR >= 30) {
+                recommendations += ' Initiate therapies per KDIGO (e.g., RAS inhibitors, SGLT2i for ACR >=30).';
+            }
+            if (PCR > 500) {
+                recommendations += ' If confirmed non-glomerular, focus on reversible causes (e.g., drugs, infection). PCR may be better for monitoring here than ACR. Refer to nephrology if PCR >500 mg/g persists.';
+            }
+            if (PCR > 3500) {
+                recommendations += ' Immediate urine immunofixation/electrophoresis to confirm overflow.';
+            }
+            conclusions.push(recommendations);
+
+            // No action if normal
+            if (ACR < 30 && PCR < 150) {
+                conclusions = ['No increased risk for CKD progression or CV events from proteinuria. Recommendations: No immediate action; routine screening as per guidelines (e.g., annual in high-risk patients like diabetics).'];
+            }
+
+            // Render Output
+            let html = '';
+            if (warnings.length > 0) {
+                html += warnings.map(warn => `<p class="warning">${warn}</p>`).join('');
+            }
+            html += `
+                <div class="section">
+                    <strong>Calculated ACR:</strong> ${ACR.toFixed(2)} mg/g<br>
+                    <strong>Category:</strong> ${acrCategory}
+                </div>
+                <div class="section">
+                    <strong>Calculated PCR:</strong> ${PCR.toFixed(2)} mg/g<br>
+                    <strong>Category:</strong> ${pcrCategory}
+                </div>
+                <div class="section">
+                    <strong>Albumin fraction (APR):</strong> ${APR}<br>
+                    <strong>Category:</strong> ${aprCategory}
+                </div>
+                <div class="section">
+                    <strong>Non-albumin proteinuria (NAP):</strong> ${NAP.toFixed(2)} mg/g<br>
+                    <strong>Category:</strong> ${napCategory}
+                </div>
+                <div class="section">
+                    <strong>Clinical Conclusions:</strong>
+                    <ul>
+                        ${conclusions.map(conc => `<li>${conc}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+            outputDiv.innerHTML = html;
+        });
+    </script>
+</body>
+</html>
