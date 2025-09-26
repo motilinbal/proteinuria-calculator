@@ -12,8 +12,6 @@
     --warning-color: #ffb74d;
     --success-color: #81c995;
     --border-radius: 12px;
-    --input-padding: 16px;
-    --button-height: 48px;
 }
 
 * {
@@ -24,15 +22,14 @@
 
 body {
     font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
-    margin: 0;
     padding: 16px;
     background-color: var(--background-color);
     color: var(--text-primary);
     line-height: 1.5;
     min-height: 100vh;
+    /* FIX FOR SCROLLING: We remove 'align-items: center' which was preventing scrolling */
     display: flex;
     justify-content: center;
-    align-items: center;
 }
 
 .container {
@@ -43,7 +40,6 @@ body {
     padding: 16px;
     border-radius: var(--border-radius);
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-    overflow: hidden;
 }
 
 h1 {
@@ -51,7 +47,6 @@ h1 {
     font-size: 1.5rem;
     font-weight: 500;
     margin-bottom: 12px;
-    color: var(--text-primary);
 }
 
 p {
@@ -102,7 +97,6 @@ button {
     font-size: 1rem;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
     transition: all 0.3s ease;
     margin-top: 4px;
 }
@@ -111,18 +105,14 @@ button:hover {
     background-color: var(--primary-dark);
 }
 
-button:active {
-    transform: scale(0.98);
-}
-
 #output {
-    margin-top: 8px;
-    white-space: pre-wrap;
+    margin-top: 16px; /* A bit more space after the button */
 }
 
+/* SPACING FIX: Reduced padding and margin-bottom */
 .section {
     background-color: var(--surface-light);
-    padding: 8px;
+    padding: 8px 12px;
     border-radius: 8px;
     margin-bottom: 6px;
     border-left: 4px solid var(--primary-color);
@@ -135,123 +125,49 @@ button:active {
     font-size: 1rem;
 }
 
-.error {
-    color: var(--error-color);
+.error, .warning {
     font-weight: 500;
-    background-color: rgba(207, 102, 121, 0.1);
     padding: 10px;
     border-radius: 8px;
     margin-bottom: 8px;
     font-size: 0.9rem;
+}
+
+.error {
+    color: var(--error-color);
+    background-color: rgba(207, 102, 121, 0.1);
 }
 
 .warning {
     color: var(--warning-color);
-    font-weight: 500;
     background-color: rgba(255, 183, 77, 0.1);
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
 }
 
 ul {
     padding-left: 20px;
-    margin-top: 0;
+    margin-top: 5px;
 }
 
+/* FONT SIZE FIX: Increased font-size and made text brighter */
 li {
-    margin-bottom: 4px;
-    color: var(--text-secondary);
-    font-size: 0.95rem;
+    margin-bottom: 5px;
+    color: #e0e0e0;
+    font-size: 0.98rem;
     line-height: 1.4;
 }
 
-/* Mobile-first responsive design */
+/* Mobile responsive design */
 @media (max-width: 480px) {
     body {
-        padding: 8px;
+        padding: 0;
     }
-    
+
     .container {
-        padding: 12px;
+        padding: 16px;
         border-radius: 0;
-        height: 100vh;
+        /* SCROLLING FIX: 'min-height' allows the container to grow taller than the screen */
+        min-height: 100vh;
         max-width: 100%;
         box-shadow: none;
     }
-    
-    h1 {
-        font-size: 1.4rem;
-    }
-    
-    button {
-        height: 48px; /* Larger touch target for mobile */
-    }
-    
-    .section {
-        padding: 8px;
-        margin-bottom: 4px;
-    }
-}
-
-/* Android-specific optimizations */
-@media (max-height: 640px) {
-    .container {
-        padding: 10px;
-    }
-    
-    h1 {
-        font-size: 1.25rem;
-        margin-bottom: 8px;
-    }
-    
-    p {
-        font-size: 0.8rem;
-        margin-bottom: 12px;
-    }
-    
-    .section {
-        padding: 8px;
-        margin-bottom: 6px;
-    }
-    
-    input {
-        padding: 10px;
-    }
-    
-    button {
-        height: 44px;
-    }
-}
-
-/* Dark mode scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--surface-color);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--surface-light);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #424242;
-}
-
-/* Material Design elevation */
-.elevation-1 {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.elevation-2 {
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.elevation-3 {
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
