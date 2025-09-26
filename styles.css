@@ -27,7 +27,6 @@ body {
     color: var(--text-primary);
     line-height: 1.5;
     min-height: 100vh;
-    /* FIX FOR SCROLLING: We remove 'align-items: center' which was preventing scrolling */
     display: flex;
     justify-content: center;
 }
@@ -106,10 +105,9 @@ button:hover {
 }
 
 #output {
-    margin-top: 16px; /* A bit more space after the button */
+    margin-top: 16px;
 }
 
-/* SPACING FIX: Reduced padding and margin-bottom */
 .section {
     background-color: var(--surface-light);
     padding: 8px 12px;
@@ -118,11 +116,12 @@ button:hover {
     border-left: 4px solid var(--primary-color);
 }
 
+/* FIX IS HERE: Changed 'display: block' to 'display: inline' */
 .section strong {
     color: var(--text-primary);
-    display: block;
-    margin-bottom: 2px;
+    display: inline; /* This allows the text to flow on the same line */
     font-size: 1rem;
+    margin-right: 6px; /* Adds a little space after the colon */
 }
 
 .error, .warning {
@@ -148,7 +147,6 @@ ul {
     margin-top: 5px;
 }
 
-/* FONT SIZE FIX: Increased font-size and made text brighter */
 li {
     margin-bottom: 5px;
     color: #e0e0e0;
@@ -165,7 +163,6 @@ li {
     .container {
         padding: 16px;
         border-radius: 0;
-        /* SCROLLING FIX: 'min-height' allows the container to grow taller than the screen */
         min-height: 100vh;
         max-width: 100%;
         box-shadow: none;
